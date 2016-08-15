@@ -1,38 +1,37 @@
 from __future__ import print_function
 import sys
-import tensorflow as tf 
+import keras 
 import json
-from scipy.sparse import csr_matrix
+from keras.models import load_model
 
-print ("tensorflowApply - got args: ", sys.argv, file=sys.stderr)
+
+print ("kerasApply - got args: ", sys.argv, file=sys.stderr)
 if len(sys.argv) != 2:
 	sys.exit("ERROR: Not exactly two arguments: [script] and model path")
 
 modelpath=sys.argv[1]
-if not modelpath:
-	sys.exit("ERROR: No model path")
 
+## load the keras model
+model = load_model("keras_model.h5")
+## TODO: check for errors
 
-## get the model
-model=joblib.load(modelpath)
-model.probability=True
-canProbs = hasattr(model,"predict_proba") and callable(getattr(model,"predict_proba"))
+## TODO: figure out model capabilities and other things we need to know
+## for the applicaiton step!
 
 ## Now iterate through reading json from standard input
 ## We expect a map which either contains data to find predictions for or
 ## just an indication to stop processing.
-## The json object contains the following keys:
-## - cmd: either "STOP" to stop processing or "CSR1" for the representation below
-## - values: an array of values for creating the sparse matrix
-## - rowinds: row indices of values
-## - colinds: column indices of values
-## - shaperows: number of rows 
-## - shapecols: number of columns 
+## For this we expect the same JSON format we also use for server intercation:
+## A map with the following keys:
+## - values: an array of arrays of values
+## - indices: an array of array of indices, if this is missing, values are dense
+## - n: the number of dimensions of values, needed if sparse and we want to
+##   to convert to dense
+## - cmd: with value "STOP" if present and has this value, stop processing.
 ## The response gets written to standard output as a line of json with the following format
 ## - status: "OK" or some error message
-## - targets: array of prediction values (float64)
+## - targets: array of prediction values (regression value or class index)
 ## - probas: array of arrays of per-class probabilities 
-## TODO: check situaton for regression!
 
 nlines=0
 ## NOTE: apparently there is a bug in python prior to 3.3 
@@ -40,20 +39,17 @@ nlines=0
 ##print("sklearnApply: before loop",file=sys.stderr)
 while True:
 	line = sys.stdin.readline()
-	##print("sklearnApply - got json line",file=sys.stderr)
+	print("kerasApply - got json line",file=sys.stderr)
 	if line == "" :
 	  break
 	nlines = nlines + 1
 	map=json.loads(line)
-	##print "JSON parsed: ",map
+	##print("JSON parsed: ",map,file=sys.stderr)
 	if map['cmd'] == "STOP":
-		break	
-	elif map['cmd'] == "CSR1":
-	    X = csr_matrix((map['values'],(map['rowinds'],map['colinds'])),shape=(map['shaperows'],map['shapecols']))
-	    ## print "Matrix is: ",X.toarray()
-	else:
-		sys.exit("ERROR invalid or no command in JSON: "+map['cmd'])
-
+		break
+	## create an array of dense value arrays from the json	
+	X = csr_matrix((map['values'],(map['rowinds'],map['colinds'])),shape=(map['shaperows'],map['shapecols']))
+	## print "Matrix is: ",X.toarray()
 	ret = {}
 	ret["status"] = "OK"
 	if canProbs:

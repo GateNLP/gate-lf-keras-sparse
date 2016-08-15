@@ -4,13 +4,13 @@ ROOTDIR="$1"
 shift
 data="$1"
 shift
-model="$1"
+modeldir="$1"
 shift
-algorithm="$1"
+algorithmfile="$1"
 shift
 
 pushd "$ROOTDIR" >/dev/null
 
-echo 1>&2 python "${ROOTDIR}/python/tensorflowTrain.py" "${data}" "${model}" "${algorithm}" $@
-python "${ROOTDIR}/python/tensorflowTrain.py" "${data}" "${model}" "${algorithm}" $@
+echo 1>&2 python "${ROOTDIR}/python/kerasTrain.py" "${data}" "${modeldir}" "${algorithm}" $@
+python "${ROOTDIR}/python/kerasTrain.py" "${data}" "${modeldir}" "${algorithmfile}" $@
 popd >/dev/null

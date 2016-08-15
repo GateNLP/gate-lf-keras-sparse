@@ -9,6 +9,7 @@ The following Python packages are required
 * `sys`
 * `keras`
 * `tensorflow` or `theano` or both
+* ` h5py` 
 * `importlib`
 * `scipy`
 * `numpy`
