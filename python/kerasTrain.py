@@ -6,63 +6,65 @@ import os
 import inspect
 import numpy as np
 
-## IMPORTANT: we need to pass/get more information about the learning problem, most
-## importantly the target type: for example if we have classification, we may want to use
-## a softmax layer of nrclass nodes by default while for regression we may just use a single 
-## output unit.
-## Depending on how the output is coded, our predict and predict_proba methods need to 
-## do different things as well.
-## 
-## As an alternative we could also use algorithms or building blocks from tf learn or from
-## tf-slim or from tflearn
-## https://github.com/tensorflow/tensorflow/tree/master/tensorflow/contrib/learn/python/learn
-## https://github.com/tensorflow/tensorflow/tree/master/tensorflow/contrib/slim
-## https://github.com/tflearn/tflearn
-##
-## Possible alternative: different commands and different engine for wrapping tf learn 
-## since that is much more similar to sklearn
+## This gets invoked by the EngineKerasWrapper which is just an instance of EnginePythonNetworksbase which
+## passes the following parameters:
+## - [rootdirectory]: this gets removed by the invoking bash script and not passed on to us
+## - path to the model/data directory with the directory separator at the end
+## - path prefix for the model file: the complete path plus the beginning of the file name(s) for 
+##   the model
+## - mode: classind/classcosts/regr
+## - nrClasses: 0 for regression or the number of classes otherwise
+## - any algorithm parameters specified for the PR
+
 
 ## IMPORTANT: the option values need to be valid python expressions, and they
 ## will get evaluated! So in order to pass a string, enclose the value in quotes!
 
 
-print("tensorflowTrain - got args: ", sys.argv, file=sys.stderr)
-if len(sys.argv) < 4:
-	sys.exit("ERROR: Not at least three arguments: [script], data base name, model base name, and options")
+print("kerasTrain - got args: ", sys.argv, file=sys.stderr)
+if len(sys.argv) < 6:
+	sys.exit("ERROR: Not at least 5 arguments: [script], model/data directory name, model base name, mode, nrClasses, and 0 to n options")
 
 data=sys.argv[1]
-if not data:
-	sys.exit("ERROR: No data path")
-
 modelpath=sys.argv[2]
-if not modelpath:
-	sys.exit("ERROR: No model path")
+mode=sys.argv[3]
+nrCl=sys.argv[4]
 
-options=sys.argv[3:]
+options=sys.argv[5:]
 
-## The option should control what exactly we want to do here
-## One possibility would be to have an option that takes the file "algorithm.py" from
-## modelpath and executes functions from there to create the graph.
-## If necessary, the functions could take arguments that depend on the dimensionality
-## and/or type of the data (e.g. number of input nodes based on shape, number of hidden
-## nodes based, by default, on shape etc.)
-## As a fallback, if that option is not given, we could instead import our own file from
-## the wrapper directory and just use some simple perceptron or other simple dense network.
 
-## load the data: we expect two files in Matrix 
-## The parameter is the prefix to which we add "dep.mtx" and "indep.mtx" to get the final names
+## load the data: we expect two files
 depfile = data+"dep.csv"
 indepfile=data+"indep.csv"
-## TODO: at some point, support, weights, costs etc
+## TODO: at some point, also support getting instance weights
 ## weightsfile=data+"instweights.csv"
-
 
 deps = np.loadtxt(depfile)
 indeps = np.loadtxt(indepfile)
 
 shape = indeps.shape
 
-print("DOING NOTHING YET, TENSORFLOW TRAINING NEEDS TO GET IMPLEMENTED",file=sys.stderr)
-print("MODEL NEEDS TO GET TRAINED MANUALLY AND SHOULD BE IN: "+modelpath)
-print("AND SHOULD HAVE NAME: tensorflow")
+## Now the actual training is done based on code which is in a file for which we 
+## got the file name as an option, or we fall back to one of our own simple default files.
+
+## for argument parsing use: argparse: https://docs.python.org/2/library/argparse.html#module-argparse
+## for invoking another python file use one of:
+## === Solution 1:
+## import sys
+## import os
+## sys.path.append(os.path.abspath("/the/directory")
+## ## if this directory ontains a file module.py
+## from module import *
+## ## imports all function defined in that file
+## === Solution 2:
+## ## use importlib, but better implemented in >3.1?
+## ##then importlib.import_module(name,package=None)
+## ## SEE http://stackoverflow.com/a/67692/1382437
+## === Solution 3:
+## ## see https://docs.python.org/3/library/runpy.html#runpy.run_module
+
+
+
+print("CAUTION: NOT WORKING PROPERLY YET!!")
+
 
