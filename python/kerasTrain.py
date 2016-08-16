@@ -1,6 +1,6 @@
 from __future__ import print_function
 import sys
-import tensorflow as tf 
+import keras
 import importlib
 import os
 import inspect
@@ -22,13 +22,13 @@ import numpy as np
 
 
 print("kerasTrain - got args: ", sys.argv, file=sys.stderr)
-if len(sys.argv) < 6:
+if len(sys.argv) < 5:
 	sys.exit("ERROR: Not at least 5 arguments: [script], model/data directory name, model base name, mode, nrClasses, and 0 to n options")
 
 data=sys.argv[1]
 modelpath=sys.argv[2]
 mode=sys.argv[3]
-nrCl=sys.argv[4]
+nrCl=int(sys.argv[4])
 
 options=sys.argv[5:]
 
@@ -39,32 +39,34 @@ indepfile=data+"indep.csv"
 ## TODO: at some point, also support getting instance weights
 ## weightsfile=data+"instweights.csv"
 
-deps = np.loadtxt(depfile)
-indeps = np.loadtxt(indepfile)
+print("Loading labels: "+depfile,file=sys.stderr)
+deps = np.loadtxt(depfile,delimiter=",")
+print("Loading attributes: "+depfile,file=sys.stderr)
+indeps = np.loadtxt(indepfile,delimiter=",")
 
 shape = indeps.shape
+print("Attributes have shape: ",shape,file=sys.stderr)
 
-## Now the actual training is done based on code which is in a file for which we 
-## got the file name as an option, or we fall back to one of our own simple default files.
+## Now to keep things simple we always try to load execute the file "lfkerastrain.py" within
+## the data directory. However if this file does not exist, we try to fall back to use our own
+## copy of that file
+dofile=data+"lfkerastrain.py"
+if(not os.path.isfile(dofile)):
+  dofile=os.path.dirname(sys.argv[0])+os.path.sep+"lfkerastrain.py"
 
-## for argument parsing use: argparse: https://docs.python.org/2/library/argparse.html#module-argparse
-## for invoking another python file use one of:
-## === Solution 1:
-## import sys
-## import os
-## sys.path.append(os.path.abspath("/the/directory")
-## ## if this directory ontains a file module.py
-## from module import *
-## ## imports all function defined in that file
-## === Solution 2:
-## ## use importlib, but better implemented in >3.1?
-## ##then importlib.import_module(name,package=None)
-## ## SEE http://stackoverflow.com/a/67692/1382437
-## === Solution 3:
-## ## see https://docs.python.org/3/library/runpy.html#runpy.run_module
+print("Running train file: ",dofile,file=sys.stderr)
+## this file has one task and one task only: create a trained model and assign it to the variable model
+execfile(dofile)
+
+## Lets check if we got a model
 
 
+## save the model
+modelfile=modelpath+".h5"
+model.save(modelfile)
+print("Model saved to ",modelfile,file=sys.stderr)
 
-print("CAUTION: NOT WORKING PROPERLY YET!!")
+
+print("kerasTrain: finishing",file=sys.stderr)
 
 
