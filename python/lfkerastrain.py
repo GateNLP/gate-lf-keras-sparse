@@ -25,8 +25,10 @@ model.add(Dense(output_dim=units1,input_dim=inputs,init='uniform',activation='re
 ## sigmoid layer, otherwise we use as many output units as we have classes
 ## Also, our loss and metrics will be different depending on if we have classification or regression
 if(mode == "regr"):
-  model.add(Dense(output_dim=1,input_dim=units1,init='uniform',activation='sigmoid'))
-  model.compile(loss='',optimizer='adam',metrics=['mse'])
+  model.add(Dense(output_dim=1,input_dim=units1,init='normal',activation='sigmoid'))
+  ## maybe use optimizer rmsprop?
+  ## maybe use activation rely or tanh?
+  model.compile(loss='mse',optimizer='adam',metrics=['mse'])
   model.fit(indeps,deps,batch_size=batchsize)
 else:
   ## NOTE: this probably works only if the mode is classind, not for classcost so far!!
@@ -40,6 +42,7 @@ else:
     ## wrapper:
     # from keras.utils import np_utils
     # np_utils.to_categorical(deps.astype(int))
+    ## Another 
  
   ## NOTE: with keras.utils.np_utils.to_categorical(deps) we could also do it the other 
   ## way round and use the shape of the resulting matrix to figure out the required number of 
