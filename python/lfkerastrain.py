@@ -36,6 +36,10 @@ else:
     onehot=indeps
   else:
     onehot=np.eye(nrCl)[deps.astype(int)]
+    ## NOTE: apparently there is a keras utils method which does the same, probably just
+    ## wrapper:
+    # from keras.utils import np_utils
+    # np_utils.to_categorical(deps.astype(int))
 
   print("Layer with inputs: ",units1," outputs: ",nrCl," shape of deps: ",onehot.shape,file=sys.stderr)
   model.add(Dense(output_dim=nrCl,input_dim=units1,activation='softmax'))
