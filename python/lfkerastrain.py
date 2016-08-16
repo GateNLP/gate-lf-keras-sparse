@@ -40,6 +40,10 @@ else:
     ## wrapper:
     # from keras.utils import np_utils
     # np_utils.to_categorical(deps.astype(int))
+ 
+  ## NOTE: with keras.utils.np_utils.to_categorical(deps) we could also do it the other 
+  ## way round and use the shape of the resulting matrix to figure out the required number of 
+  ## otput units, because the keras routine determines the number of different classes itself.
 
   print("Layer with inputs: ",units1," outputs: ",nrCl," shape of deps: ",onehot.shape,file=sys.stderr)
   model.add(Dense(output_dim=nrCl,input_dim=units1,activation='softmax'))
