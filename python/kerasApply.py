@@ -65,6 +65,8 @@ while True:
         ## probs = model.predict(values) 
 	ret = {}
 	ret["status"] = "OK"
+        ## NOTE: instead of argmax, we could also use class index 
+        ## prediction using model.predict_classes(values,verbose=0) 
 	targets = np.argmax(probs,axis=1).astype("float64")
 	## print("Got probs: ",probs,file=sys.stderr)
 	## print("Got targets: ",targets,file=sys.stderr)

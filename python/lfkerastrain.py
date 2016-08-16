@@ -10,7 +10,7 @@ print("Running lfkerastrain",file=sys.stderr)
 inputs=shape[1]
 examples=shape[0]
 
-batchsize=examples/100+1
+batchsize=examples/10+1
 
 model=Sequential()
 ## the first layer has as many inputs as our data vectors
@@ -47,11 +47,28 @@ else:
 
   print("Layer with inputs: ",units1," outputs: ",nrCl," shape of deps: ",onehot.shape,file=sys.stderr)
   model.add(Dense(output_dim=nrCl,input_dim=units1,activation='softmax'))
-  ## explicitly specify the optimizer
-  sgd=SGD(lr=0.1,decay=1e-6,momentum=0.9,nesterov=True)
+  ## explicitly specify the optimizer: stochastic gradient descent
+  sgd=SGD(lr=0.01,decay=1e-6,momentum=0.9,nesterov=True)
+  ## Alternatives: RMSprop, Adagrad, Adadelta ... see https://keras.io/optimizers/
+
+  ## NOTE: for classification, average crossentropy error (ACE) is usually better then acc or mse:
+  ## - acc does not consider how close the one hot units really are to the target
+  ## - mse over-uses the distances of the incorrect outputs
+  ## 
   # an alternate optimizer could be 'adadelta'
-  model.compile(loss='categorical_crossentropy',metrics=['accuracy'],optimizer=sgd)
-  model.fit(indeps,onehot,batch_size=batchsize)
+  ## Metrocs: list of metrics to evaluate for the training progress output
+  model.compile(loss='categorical_crossentropy',metrics=['categorical_crossentropy','accuracy'],optimizer=sgd)
+  ## alternate loss: mse, mae, mape, msle, squared_hinge, hinge, kld, poisson, cosine_proximity
+  ## see https://github.com/fchollet/keras/blob/master/keras/objectives.py
+
+  ## TODO: we should maybe automatically include support for maximum epochs, automatical adjustment of 
+  ## learning rate, early termination if we go below a certain loss threshold, use of validation set, and other
+  ## details (we use decay for SGD which decreases the learning rate!)
+  ## - validation_split=0.1
+  ## - nb_epochs=N
+  ## - verbose=1
+  ## - show_accuracy=True
+  model.fit(indeps,onehot,batch_size=batchsize,show_accuracy=True,validation_split=0.1)
 
 print("Finishing lfkerastrain",file=sys.stderr)
 
