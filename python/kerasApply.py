@@ -1,22 +1,41 @@
 from __future__ import print_function
 import sys
+import os 
+
+## suppress both standard output and standard error when importing the following ...
+## NOTE: the following trick works only for part of the output we get here and does
+## NOT suppress some lines that are written to standard output. This is handled 
+## in the gate-interaction code for now where we re-read until we get something starting
+## with "{"
+nullfh1 =  os.open(os.devnull,os.O_RDWR)
+nullfh2 =  os.open(os.devnull,os.O_RDWR)
+savefh1 = os.dup(1)
+savefh2 = os.dup(2)
+os.dup2(nullfh1,1)
+os.dup2(nullfh2,2)
 import keras 
+
+
 import json
 from keras.models import load_model
+import numpy as np
+
+## keep suppressing standard output, but re-establish stderr
+os.dup2(savefh2,2)
+os.close(nullfh2)
 
 
 print ("kerasApply - got args: ", sys.argv, file=sys.stderr)
-if len(sys.argv) != 2:
-	sys.exit("ERROR: Not exactly two arguments: [script] and model path")
+if len(sys.argv) != 4:
+	sys.exit("ERROR: Not exactly two arguments: [script], model path prefix, mode, nrclasses")
 
 modelpath=sys.argv[1]
+mode=sys.argv[2]
+nrCl=int(sys.argv[3])
 
 ## load the keras model
-model = load_model("keras_model.h5")
-## TODO: check for errors
+model = load_model(modelpath+".h5")
 
-## TODO: figure out model capabilities and other things we need to know
-## for the applicaiton step!
 
 ## Now iterate through reading json from standard input
 ## We expect a map which either contains data to find predictions for or
@@ -37,9 +56,18 @@ nlines=0
 ## NOTE: apparently there is a bug in python prior to 3.3 
 ## that forces the use of Ctrl-D twice to get EOF from the command line!!
 ##print("sklearnApply: before loop",file=sys.stderr)
+
+## prepare for the loop
+os.dup2(savefh1,1)
+os.close(nullfh1)
+
 while True:
 	line = sys.stdin.readline()
-	print("kerasApply - got json line",file=sys.stderr)
+	## suppress standard output until we write the response back
+	nullfh =  os.open(os.devnull,os.O_RDWR)
+	savefh = os.dup(1)
+	os.dup2(nullfh,1)
+	##print("kerasApply - got json line",line,file=sys.stderr)
 	if line == "" :
 	  break
 	nlines = nlines + 1
@@ -47,24 +75,21 @@ while True:
 	##print("JSON parsed: ",map,file=sys.stderr)
 	if map['cmd'] == "STOP":
 		break
-	## create an array of dense value arrays from the json	
-	X = csr_matrix((map['values'],(map['rowinds'],map['colinds'])),shape=(map['shaperows'],map['shapecols']))
-	## print "Matrix is: ",X.toarray()
+	if(map.has_key("indices")):
+          sys.exit("Sparse vectors not yet supported!!")
+        values = map['values']
+        #probs = model.predict_proba(values) 
+        probs = model.predict(values) 
 	ret = {}
 	ret["status"] = "OK"
-	if canProbs:
-		probs = model.predict_proba(X)
-		targets = np.argmax(probs,axis=1).astype("float64")
-		#print "Got probs: ",probs
-		#print "Got targets: ",targets
-		ret["targets"] = targets.tolist()
-		ret["probas"] = probs.tolist()
-	else:
-		targets = model.predict(X)
-		#print "Got targets: ",targets
-		ret["targets"] = targets.tolist()
-
-	##print("sklearnApply: sending response",file=sys.stderr)
+	targets = np.argmax(probs,axis=1).astype("float64")
+	## print("Got probs: ",probs,file=sys.stderr)
+	## print("Got targets: ",targets,file=sys.stderr)
+	ret["targets"] = targets.tolist()
+	ret["probas"] = probs.tolist()
+	##print("sklearnApply: sending response",json.dumps(ret),file=sys.stderr)
+	os.dup2(savefh,1)
+	os.close(nullfh)
 	print(json.dumps(ret))
 	sys.stdout.flush()
 	##print("sklearnApply: response sent",file=sys.stderr)
