@@ -78,8 +78,8 @@ while True:
 	if(map.has_key("indices")):
           sys.exit("Sparse vectors not yet supported!!")
         values = map['values']
-        #probs = model.predict_proba(values) 
-        probs = model.predict(values) 
+        probs = model.predict_proba(values,verbose=False) 
+        ## probs = model.predict(values) 
 	ret = {}
 	ret["status"] = "OK"
 	targets = np.argmax(probs,axis=1).astype("float64")
