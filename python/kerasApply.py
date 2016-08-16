@@ -1,28 +1,19 @@
 from __future__ import print_function
 import sys
 import os 
-
-## suppress both standard output and standard error when importing the following ...
-## NOTE: the following trick works only for part of the output we get here and does
-## NOT suppress some lines that are written to standard output. This is handled 
-## in the gate-interaction code for now where we re-read until we get something starting
-## with "{"
-nullfh1 =  os.open(os.devnull,os.O_RDWR)
-nullfh2 =  os.open(os.devnull,os.O_RDWR)
-savefh1 = os.dup(1)
-savefh2 = os.dup(2)
-os.dup2(nullfh1,1)
-os.dup2(nullfh2,2)
-import keras 
-
-
 import json
-from keras.models import load_model
 import numpy as np
 
-## keep suppressing standard output, but re-establish stderr
-os.dup2(savefh2,2)
-os.close(nullfh2)
+olderr=sys.stderr
+oldout=sys.stdout
+f=open("/dev/null",'w')
+sys.stderr=f
+sys.stdout=f
+import keras 
+from keras.models import load_model
+
+## re-enable stderr, but keep suppressing stdout just to be safe ...
+sys.stderr=olderr
 
 
 print ("kerasApply - got args: ", sys.argv, file=sys.stderr)
@@ -57,16 +48,8 @@ nlines=0
 ## that forces the use of Ctrl-D twice to get EOF from the command line!!
 ##print("sklearnApply: before loop",file=sys.stderr)
 
-## prepare for the loop
-os.dup2(savefh1,1)
-os.close(nullfh1)
-
 while True:
 	line = sys.stdin.readline()
-	## suppress standard output until we write the response back
-	nullfh =  os.open(os.devnull,os.O_RDWR)
-	savefh = os.dup(1)
-	os.dup2(nullfh,1)
 	##print("kerasApply - got json line",line,file=sys.stderr)
 	if line == "" :
 	  break
@@ -88,10 +71,8 @@ while True:
 	ret["targets"] = targets.tolist()
 	ret["probas"] = probs.tolist()
 	##print("sklearnApply: sending response",json.dumps(ret),file=sys.stderr)
-	os.dup2(savefh,1)
-	os.close(nullfh)
-	print(json.dumps(ret))
-	sys.stdout.flush()
+	print(json.dumps(ret),file=oldout)
+	oldout.flush()
 	##print("sklearnApply: response sent",file=sys.stderr)
 
 	
