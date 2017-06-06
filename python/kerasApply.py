@@ -58,11 +58,11 @@ while True:
     #print("JSON parsed: ",map,file=sys.stderr)
     if map['cmd'] == "STOP":
         break
-    if map.has_key("indices"):
+    if "indices" in map:
         sys.exit("Sparse vectors not yet supported!!")
-        values = map['values']
-        probs = model.predict_proba(values, verbose=False)
-        ## probs = model.predict(values) 
+    values = np.array(map['values'])
+    probs = model.predict_proba(values, verbose=False)
+    # probs = model.predict(values) 
     ret = {}
     ret["status"] = "OK"
     # NOTE: instead of argmax, we could also use class index
