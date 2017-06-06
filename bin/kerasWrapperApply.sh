@@ -3,7 +3,7 @@
 ROOTDIR="$1"
 shift
 
-mypython=${SKLEARN_WRAPPER_PYTHON:-python}
+mypython=${KERAS_WRAPPER_PYTHON:-python}
 
 pushd "$ROOTDIR" >/dev/null
 
