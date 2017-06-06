@@ -5,6 +5,8 @@ import importlib
 import os
 import inspect
 import numpy as np
+# import h5py just to check if it is installed
+import h5py
 
 # This gets invoked by the EngineKerasWrapper which is just an instance of EnginePythonNetworksbase which
 # passes the following parameters:
@@ -56,7 +58,9 @@ if not os.path.isfile(dofile):
 
 print("Running train file: ", dofile, file=sys.stderr)
 # this file has one task and one task only: create a trained model and assign it to the variable model
-execfile(dofile)
+# Python2 execfile was used here, but that does not work in python3
+with open(dofile, 'rb') as pythonfile:
+    exec(pythonfile.read())
 
 # Lets check if we got a model
 
