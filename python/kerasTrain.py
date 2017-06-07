@@ -48,6 +48,7 @@ indeps = np.loadtxt(indepfile, delimiter=",")
 
 shape = indeps.shape
 print("Attributes have shape: ", shape, file=sys.stderr)
+print("Targets have shape: ", deps.shape, file=sys.stderr)
 
 # Now to keep things simple we always try to load execute the file "lfkerastrain.py" within
 # the data directory. However if this file does not exist, we try to fall back to use our own
@@ -57,6 +58,7 @@ if not os.path.isfile(dofile):
   dofile=os.path.dirname(sys.argv[0])+os.path.sep+"lfkerastrain.py"
 
 print("Running train file: ", dofile, file=sys.stderr)
+
 # this file has one task and one task only: create a trained model and assign it to the variable model
 # Python2 execfile was used here, but that does not work in python3
 with open(dofile, 'rb') as pythonfile:
