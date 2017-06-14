@@ -1,4 +1,4 @@
-# tensorflow-wrapper
+# keras-wrapper
 
 A simple wrapper to wrap Keras (https://github.com/fchollet/keras) functionality for use from
 the gateplugin-LearningFramework plugin (https://github.com/GateNLP/gateplugin-LearningFramework/issues). 
