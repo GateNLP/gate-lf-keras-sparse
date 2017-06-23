@@ -1,7 +1,6 @@
 #!/bin/bash
 
-ROOTDIR="$1"
-shift
+ROOTDIR="$KERAS_WRAPPER_HOME"
 
 mypython=${KERAS_WRAPPER_PYTHON:-python}
 
